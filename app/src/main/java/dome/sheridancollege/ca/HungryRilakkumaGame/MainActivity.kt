@@ -22,29 +22,27 @@ import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
 
-    //instantiating a new donut object
-    internal var donut = Donut(findViewById<View>(R.id.donut) as ImageView, false)
+    //instantiating a new donut object using lateinit as it is fully instantiated later on the onCreate
+    //same with relative layout
+    lateinit var donut: Donut
+    lateinit var rl: RelativeLayout
 
-    internal var MIN_X = 0
-    internal var MAX_X: Int = 0
-    internal var MIN_Y = 0
-    internal var MAX_Y: Int = 0
-    internal var speed = 7
 
-    // System sensor manager instance.
+    // System sensor manager and sensors
     private var sensorService: SensorManager? = null
-
-    internal var rl: RelativeLayout
-
-    //creating a sensor for compass
     private var sensor: Sensor? = null
 
-    //imgview for compass
-    private var compass: ImageView? = null
 
-    //donut
-    //    private ImageView donut;
-    //    private boolean isDonutAlive;
+    // numbers for calculations
+    private var MIN_X = 0
+    internal var MAX_X: Int = 0
+    private var MIN_Y = 0
+    internal var MAX_Y: Int = 0
+    private var speed = 7
+
+
+    //imgviews and textviews
+    private var compass: ImageView? = null
 
     //degree for rotation
     private var currentDegree = 0f
@@ -151,6 +149,7 @@ class MainActivity : AppCompatActivity() {
         sensor = sensorService!!.getDefaultSensor(Sensor.TYPE_ORIENTATION)
 
         //compass and donut
+        donut = Donut(findViewById<View>(R.id.donut) as ImageView, false)
         compass = findViewById<View>(R.id.imageViewCompass) as ImageView
 
         //        donut = (ImageView) findViewById(R.id.donut);
