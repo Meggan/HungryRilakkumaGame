@@ -34,39 +34,27 @@ class MainActivity : AppCompatActivity() {
 
 
     // numbers for calculations
+    private var speed = 7
+    private var score: Int = 0
+    private val timer: Int = 0
     private var MIN_X = 0
     internal var MAX_X: Int = 0
     private var MIN_Y = 0
     internal var MAX_Y: Int = 0
-    private var speed = 7
-
-
-    //imgviews and textviews
-    private var compass: ImageView? = null
-
-    //degree for rotation
-    private var currentDegree = 0f
-
-
-    //imgview for rilakkuma
-    private var rilakkuma: ImageView? = null
-    private var translationX: Float = 0.toFloat()
-    private var translationY: Float = 0.toFloat()
+    private var currentDegree = 0f //degree for rotation of the compass
+    private var translationX: Float = 0.toFloat() // X coordinate for rilakkuma
+    private var translationY: Float = 0.toFloat() // Y coordinate for rilakkuma
     private var rilakkumaWidth: Int = 0
     private var rilakkumaHeight: Int = 0
 
-    //text views
+    //imgviews and textviews and button
+    private var compass: ImageView? = null
+    private var rilakkuma: ImageView? = null
     private var tvTimer: TextView? = null
     private var tvScore: TextView? = null
-
-    //timer and score
-    private var score: Int = 0
-    private val timer: Int = 0
-    private var isRunning: Boolean = false
-
-    //button view
     private val btnStart: Button? = null
 
+    private var isRunning: Boolean = false
 
     //countdown timer for 60 seconds
     internal var cdt: CountDownTimer = object : CountDownTimer(60000, 1000) {
