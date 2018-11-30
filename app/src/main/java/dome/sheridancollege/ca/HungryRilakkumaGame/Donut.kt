@@ -22,8 +22,6 @@ fun createDonut(donut: Donut, MAX_X: Int, MAX_Y: Int) {
         dy = Math.random() * (MAX_Y - 1) + donut.donutImage.getLayoutParams().height
     } while (dy > MAX_Y - donut.donutImage.getLayoutParams().height || dy < donut.donutImage.getLayoutParams().height)
 
-    println("X: $dx")
-    println("Y: $dy")
     donut.donutImage.setTranslationX(dx.toFloat())
     donut.donutImage.setTranslationY(dy.toFloat())
     donut.isDonutAlive = true

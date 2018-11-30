@@ -16,8 +16,6 @@ fun moveDirection(rilakkuma: Rilakkuma, azimuth: Double, MAX_X: Int, MAX_Y: Int,
 
     rilakkumaWidth = rilakkuma.rilakkumaImage.layoutParams.width
     rilakkumaHeight = rilakkuma.rilakkumaImage.layoutParams.height
-    println(rilakkumaWidth)
-    println(rilakkumaHeight)
 
     //move north (up) 0-44
     if (azimuth < 45 && translationY >= speed && translationY <= MAX_Y) {

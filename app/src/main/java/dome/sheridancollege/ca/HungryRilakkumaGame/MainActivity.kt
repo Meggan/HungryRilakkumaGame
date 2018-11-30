@@ -10,11 +10,7 @@ import android.os.CountDownTimer
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.animation.Animation
-import android.view.animation.RotateAnimation
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -22,11 +18,11 @@ import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
 
-    //instantiating a new donut object using lateinit as it is fully instantiated later on the onCreate
-    //same with relative layout and rilakkuma
+    //instantiating a new objects using lateinit as it is fully instantiated later on the onCreate etc..
     lateinit var donut: Donut
     lateinit var rilakkuma: Rilakkuma
     lateinit var rl: RelativeLayout
+    lateinit var compass: Compass
 
 
     // System sensor manager and sensors
@@ -38,20 +34,14 @@ class MainActivity : AppCompatActivity() {
     private var speed = 7
     private var score: Int = 0
     private val timer: Int = 0
-    private var MIN_X = 0
     internal var MAX_X: Int = 0
-    private var MIN_Y = 0
     internal var MAX_Y: Int = 0
     private var currentDegree = 0f //degree for rotation of the compass
 
     //imgviews and textviews and button
-    private var compass: ImageView? = null
-//    private var rilakkuma: ImageView? = null
     private var tvTimer: TextView? = null
     private var tvScore: TextView? = null
     private val btnStart: Button? = null
-
-//    private var isRunning: Boolean = false
 
     //countdown timer for 60 seconds
     internal var cdt: CountDownTimer = object : CountDownTimer(60000, 1000) {
@@ -79,20 +69,8 @@ class MainActivity : AppCompatActivity() {
         override fun onSensorChanged(event: SensorEvent) {
 
             tvScore = findViewById(R.id.tvScore)
-
-            val degree = Math.round(event.values[0]).toFloat()
-            // create a rotation animation (reverse turn degree degrees)
-            val ra = RotateAnimation(
-                    currentDegree,
-                    -degree, Animation.RELATIVE_TO_SELF, 0.5f,
-                    Animation.RELATIVE_TO_SELF, 0.5f)
-            // how long the animation will take place
-            ra.duration = 210
-            // set the animation after the end of the reservation status
-            ra.fillAfter = true
-
-            // Start the animation
-            compass!!.startAnimation(ra)
+            var degree = Math.round(event.values[0]).toFloat()
+            moveCompassDirection(compass, currentDegree,degree)
             currentDegree = -degree
 
             //rilakkuma does not move if game isnt started yet. compass is fine though
@@ -133,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         //create all objects
         donut = Donut(findViewById(R.id.donut), false)
         rilakkuma = Rilakkuma(findViewById(R.id.imageViewRilakkuma),false);
-        compass = findViewById(R.id.imageViewCompass)
+        compass = Compass(findViewById(R.id.imageViewCompass))
         rl = findViewById(R.id.relativeLayout)
 
         //values based on device
@@ -156,12 +134,11 @@ class MainActivity : AppCompatActivity() {
             //countdown timer if cdt is already running, cancel current one and reset score
             cdt.cancel()
             score = 0
-            timerCountdown(timer)
+            cdt.start()
             tvScore!!.text = "Score : $score"
             tvTimer!!.text = "Timer : $timer"
             do {
                 createDonut(donut, MAX_X, MAX_Y)
-                //                    donut.createDonut(donut);
             } while (rilakkuma.isRunning && !donut.isDonutAlive)
         }
 
@@ -176,13 +153,7 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
-
-    fun timerCountdown(timer: Int) {
-        tvTimer = findViewById(R.id.tvTimer)
-        cdt.start()
-    }
-
-    override fun onDestroy() {
+        override fun onDestroy() {
         super.onDestroy()
         if (sensor != null) {
             sensorService!!.unregisterListener(mySensorEventListener)
