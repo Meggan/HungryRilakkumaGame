@@ -40,8 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView compass;
 
     //donut
-    private ImageView donut;
-    private boolean isDonutAlive;
+//    private ImageView donut;
+//    private boolean isDonutAlive;
 //    final int MAX_DX = 370;
 //    final int MAX_DY = 515;
 
@@ -68,6 +68,10 @@ public class MainActivity extends AppCompatActivity {
     //button view
     private Button btnStart;
 
+
+    //donut object
+    Donut donut;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,9 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
         //compass and donut
         compass = (ImageView) findViewById(R.id.imageViewCompass);
-//        Donut donut = new Donut((ImageView)findViewById(R.id.donut),false);
-        donut = (ImageView) findViewById(R.id.donut);
-
+//        donut = (ImageView) findViewById(R.id.donut);
+        donut = new Donut((ImageView)findViewById(R.id.donut),false);
 
         //rilakkuma
         rilakkuma = findViewById(R.id.imageViewRilakkuma);
@@ -104,6 +107,13 @@ public class MainActivity extends AppCompatActivity {
                     btnStart.setText("Restart");
                 }
 
+                //relative layout
+                rl = findViewById(R.id.relativeLayout);
+                MAX_Y = rl.getLayoutParams().height;
+                MAX_X = rl.getLayoutParams().width;
+                System.out.println("Max X: " + MAX_X + "| Donut width: " + donut.getDonut().getLayoutParams().width);
+                System.out.println("Max Y: " + MAX_Y + "| Donut height: " + donut.getDonut().getLayoutParams().height);
+
                 //countdown timer if cdt is already running, cancel current one and reset score
                 cdt.cancel();
                 score = 0;
@@ -111,18 +121,13 @@ public class MainActivity extends AppCompatActivity {
                 tvScore.setText("Score : " + score);
                 tvTimer.setText("Timer : " + timer);
                 do{
-                    createDonut();
-                }while(isRunning && !isDonutAlive);
+                    donut.createDonut(donut,MAX_X,MAX_Y);
+                }while(isRunning && !donut.isDonutAlive());
 
             }
         });
 
-        //relative layout
-        rl = findViewById(R.id.relativeLayout);
-        MAX_Y = rl.getLayoutParams().height;
-        MAX_X = rl.getLayoutParams().width;
-        System.out.println("Max X: " + MAX_X + "| Donut width: " + donut.getLayoutParams().width);
-        System.out.println("Max Y: " + MAX_Y + "| Donut height: " + donut.getLayoutParams().height);
+
 
 
         if (sensor != null) {
@@ -135,26 +140,6 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
             finish();
         }
-    }
-
-    private void createDonut(){
-        //if there is no donut out, create new one
-        double dx;
-        double dy;
-
-        do{
-            dx = (Math.random()*(((MAX_X) - MIN_X) + 1)) + donut.getLayoutParams().width;
-        }while(dx>MAX_X-donut.getLayoutParams().width || dx<(donut.getLayoutParams().width));
-
-        do{
-            dy = (Math.random()*((MAX_Y - MIN_Y) + 1)) + donut.getLayoutParams().height;
-        }while(dy>MAX_Y-donut.getLayoutParams().height || dy<(donut.getLayoutParams().height));
-
-        System.out.println("X: " + dx);
-        System.out.println("Y: " + dy);
-        donut.setTranslationX((float)dx);
-        donut.setTranslationY((float)dy);
-        isDonutAlive=true;
     }
 
     //countdown timer for 60 seconds
@@ -220,14 +205,14 @@ public class MainActivity extends AppCompatActivity {
 
 
             rilakkuma.getHitRect(rilakkumaRect);
-            donut.getHitRect(donutRect);
+            donut.getDonut().getHitRect(donutRect);
 
             //check for collision using rect of both donut and rilakkuma
             if (Rect.intersects(rilakkumaRect,donutRect)) {
 
                 score++;
-                isDonutAlive = false;
-                createDonut();
+                donut.setDonutAlive(false);
+                donut.createDonut(donut,MAX_X,MAX_Y);
                 tvScore.setText("Score : " + score);
             }
         }
@@ -239,11 +224,11 @@ public class MainActivity extends AppCompatActivity {
         //if collision increase score
         if (rX == dX) {
             score++;
-            isDonutAlive = false;
+            donut.setDonutAlive(false);
         }
         else if (rY == dY) {
             score++;
-            isDonutAlive = false;
+            donut.setDonutAlive(false);
         }
 
         tvScore.setText("Score : " + score);
