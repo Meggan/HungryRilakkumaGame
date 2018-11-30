@@ -23,8 +23,9 @@ import android.widget.Toast
 class MainActivity : AppCompatActivity() {
 
     //instantiating a new donut object using lateinit as it is fully instantiated later on the onCreate
-    //same with relative layout
+    //same with relative layout and rilakkuma
     lateinit var donut: Donut
+    lateinit var rilakkuma: Rilakkuma
     lateinit var rl: RelativeLayout
 
 
@@ -42,41 +43,36 @@ class MainActivity : AppCompatActivity() {
     private var MIN_Y = 0
     internal var MAX_Y: Int = 0
     private var currentDegree = 0f //degree for rotation of the compass
-    private var translationX: Float = 0.toFloat() // X coordinate for rilakkuma
-    private var translationY: Float = 0.toFloat() // Y coordinate for rilakkuma
-    private var rilakkumaWidth: Int = 0
-    private var rilakkumaHeight: Int = 0
 
     //imgviews and textviews and button
     private var compass: ImageView? = null
-    private var rilakkuma: ImageView? = null
+//    private var rilakkuma: ImageView? = null
     private var tvTimer: TextView? = null
     private var tvScore: TextView? = null
     private val btnStart: Button? = null
 
-    private var isRunning: Boolean = false
+//    private var isRunning: Boolean = false
 
     //countdown timer for 60 seconds
     internal var cdt: CountDownTimer = object : CountDownTimer(60000, 1000) {
 
         override fun onTick(millisUntilFinished: Long) {
-            isRunning = true
-            //countdown timer
-            tvTimer!!.text = "Timer: " + millisUntilFinished / 1000
+            rilakkuma.isRunning=true //set to true while timer is still on
+            tvTimer!!.text = "Timer: " + millisUntilFinished / 1000   //countdown timer
 
         }
 
         override fun onFinish() {
-            isRunning = false
+            rilakkuma.isRunning=false; //set to false when timer is done
             val toast = Toast.makeText(applicationContext, "Final Score: $score", Toast.LENGTH_SHORT)
             toast.show()
         }
     }
 
     private val mySensorEventListener = object : SensorEventListener {
-        //rect for collision
-        internal var rilakkumaRect = Rect()
-        internal var donutRect = Rect()
+        //rects for collision
+        var rilakkumaRect = Rect()
+        var donutRect = Rect()
 
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
@@ -85,7 +81,6 @@ class MainActivity : AppCompatActivity() {
             tvScore = findViewById(R.id.tvScore)
 
             val degree = Math.round(event.values[0]).toFloat()
-            //rotate animation
             // create a rotation animation (reverse turn degree degrees)
             val ra = RotateAnimation(
                     currentDegree,
@@ -101,7 +96,7 @@ class MainActivity : AppCompatActivity() {
             currentDegree = -degree
 
             //rilakkuma does not move if game isnt started yet. compass is fine though
-            if (!isRunning) {
+            if (!rilakkuma.isRunning) {
                 //handles the start collision..
                 if (score == 1) {
                     tvScore!!.text = "Score : 0"
@@ -112,10 +107,9 @@ class MainActivity : AppCompatActivity() {
             // angle between the magnetic north direction
             // 0=North, 90=East, 180=South, 270=West
             val azimuth = event.values[0]
-            moveDirection(Math.floor(azimuth.toDouble()))
+            moveDirection(rilakkuma, Math.floor(azimuth.toDouble()),MAX_X,MAX_Y,speed)
 
-
-            rilakkuma!!.getHitRect(rilakkumaRect)
+            rilakkuma.rilakkumaImage.getHitRect(rilakkumaRect)
             donut.donutImage.getHitRect(donutRect)
 
             //check for collision using rect of both donut and rilakkuma
@@ -136,21 +130,18 @@ class MainActivity : AppCompatActivity() {
         sensorService = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         sensor = sensorService!!.getDefaultSensor(Sensor.TYPE_ORIENTATION)
 
-        //compass and donut
-        donut = Donut(findViewById<View>(R.id.donut) as ImageView, false)
-        compass = findViewById<View>(R.id.imageViewCompass) as ImageView
+        //create all objects
+        donut = Donut(findViewById(R.id.donut), false)
+        rilakkuma = Rilakkuma(findViewById(R.id.imageViewRilakkuma),false);
+        compass = findViewById(R.id.imageViewCompass)
+        rl = findViewById(R.id.relativeLayout)
 
-        //        donut = (ImageView) findViewById(R.id.donut);
+        //values based on device
+        MAX_Y = rl.layoutParams.height
+        MAX_X = rl.layoutParams.width
 
 
-        //rilakkuma
-        rilakkuma = findViewById(R.id.imageViewRilakkuma)
-        rilakkumaWidth = rilakkuma!!.layoutParams.width
-        rilakkumaHeight = rilakkuma!!.layoutParams.height
-        println(rilakkumaWidth)
-        println(rilakkumaHeight)
-
-        //button
+        //button instantiated and listener created
         val btnStart = findViewById<Button>(R.id.btnStart)
         btnStart.setOnClickListener {
             //textViews
@@ -162,7 +153,6 @@ class MainActivity : AppCompatActivity() {
             if (btnStart.text == "Start") {
                 btnStart.text = "Restart"
             }
-
             //countdown timer if cdt is already running, cancel current one and reset score
             cdt.cancel()
             score = 0
@@ -172,98 +162,20 @@ class MainActivity : AppCompatActivity() {
             do {
                 createDonut(donut, MAX_X, MAX_Y)
                 //                    donut.createDonut(donut);
-            } while (isRunning && !donut.isDonutAlive)
+            } while (rilakkuma.isRunning && !donut.isDonutAlive)
         }
-
-        //relative layout
-        rl = findViewById(R.id.relativeLayout)
-        MAX_Y = rl.layoutParams.height
-        MAX_X = rl.layoutParams.width
-        println("Max X: " + MAX_X + "| Donut width: " + donut.donutImage.layoutParams.width)
-        println("Max Y: " + MAX_Y + "| Donut height: " + donut.donutImage.layoutParams.height)
-
 
         if (sensor != null) {
             sensorService!!.registerListener(mySensorEventListener, sensor,
                     SensorManager.SENSOR_DELAY_GAME)
-            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor")
+            Log.i("Compass MainActivity", "ORIENTATION Sensor Ready")
         } else {
-            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor")
-            Toast.makeText(this, "ORIENTATION Sensor not found",
+            Log.e("Compass MainActivity", "ORIENTATION Sensor Ready")
+            Toast.makeText(this, "ERROR: ORIENTATION Sensor not found",
                     Toast.LENGTH_LONG).show()
             finish()
         }
     }
-
-    //check collision to increase score
-    private fun checkCollision(rX: Float, rY: Float, dX: Float, dY: Float) {
-        tvScore = findViewById(R.id.tvScore)
-        //if collision increase score
-        if (rX == dX) {
-            score++
-            donut.isDonutAlive = false
-        } else if (rY == dY) {
-            score++
-            donut.isDonutAlive = false
-        }
-
-        tvScore!!.text = "Score : $score"
-    }
-
-    //move direction based on compass
-    fun moveDirection(azimuth: Double) {
-        //move north (up) 0-44
-        if (azimuth < 45 && translationY >= MIN_Y + speed && translationY <= MAX_Y) {
-            moveNorth()
-        } //move northeast 45-89
-        else if (azimuth >= 45 && azimuth < 90 && translationY >= MIN_Y + speed && translationY <= MAX_Y && translationX >= MIN_X && translationX <= MAX_X) {
-            moveNorth()
-            moveEast()
-        }//move east (right) 90-179
-        else if (azimuth >= 90 && azimuth < 135 && translationX >= MIN_X && translationX <= MAX_X) {
-            moveEast()
-        }//move southeast 135-179
-        else if (azimuth >= 135 && azimuth < 180 && translationY >= MIN_Y - speed && translationY <= MAX_Y - rilakkumaHeight && translationX >= MIN_X && translationX <= MAX_X) {
-            moveSouth()
-            moveEast()
-        }//move south (down) 180-224
-        else if (azimuth >= 180 && azimuth < 225 && translationY >= MIN_Y - speed && translationY <= MAX_Y - rilakkumaHeight) {
-            moveSouth()
-        } //move southwest 225-269
-        else if (azimuth >= 225 && azimuth < 280 && translationY >= MIN_Y - speed && translationY <= MAX_Y - rilakkumaHeight && translationX >= MIN_X - speed && translationX <= MAX_X - rilakkumaWidth) {
-            moveSouth()
-            moveWest()
-        }// move left (west) 270-314
-        else if (azimuth >= 270 && azimuth < 315 && translationX >= MIN_X - speed && translationX <= MAX_X - rilakkumaWidth) {
-            moveWest()
-        } //move northwest 315-360
-        else if (azimuth >= 315 && translationY >= MIN_Y + speed && translationY <= MAX_Y && translationX >= MIN_X - speed && translationX <= MAX_X - rilakkumaWidth) {
-            moveNorth()
-            moveWest()
-        }
-
-    }
-
-    fun moveWest() {
-        translationX = translationX + speed
-        rilakkuma!!.translationX = translationX
-    }
-
-    fun moveEast() {
-        translationX = translationX - speed
-        rilakkuma!!.translationX = translationX
-    }
-
-    fun moveNorth() {
-        translationY = translationY - speed
-        rilakkuma!!.translationY = translationY
-    }
-
-    fun moveSouth() {
-        translationY = translationY + speed
-        rilakkuma!!.translationY = translationY
-    }
-
 
     fun timerCountdown(timer: Int) {
         tvTimer = findViewById(R.id.tvTimer)
