@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
 
     // numbers for calculations
-    private var speed = 7
+    private val speed: Int = 7
     private var score: Int = 0
     private val timer: Int = 0
     internal var MAX_X: Int = 0
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
         //create all objects
         donut = Donut(findViewById(R.id.donut), false)
-        rilakkuma = Rilakkuma(findViewById(R.id.imageViewRilakkuma),false);
+        rilakkuma = Rilakkuma(findViewById(R.id.imageViewRilakkuma),false)
         compass = Compass(findViewById(R.id.imageViewCompass))
         rl = findViewById(R.id.relativeLayout)
 

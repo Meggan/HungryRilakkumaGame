@@ -11,6 +11,7 @@ var rilakkumaWidth: Int = 0
 var rilakkumaHeight: Int = 0
 
 
+
 //move direction based on compass
 fun moveDirection(rilakkuma: Rilakkuma, azimuth: Double, MAX_X: Int, MAX_Y: Int, speed: Int) {
 
@@ -48,6 +49,7 @@ fun moveDirection(rilakkuma: Rilakkuma, azimuth: Double, MAX_X: Int, MAX_Y: Int,
     }
 
 }
+
 
 fun moveWest(rilakkuma: Rilakkuma, speed: Int) {
     translationX += speed
